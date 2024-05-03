@@ -7,4 +7,4 @@
 - Recipe page for each, Including ingredients and instructions
 - User Profile where the user can see his favorite recipes
 
-![Recipe app Mockup](https://github.com/sharifaaldakheel/Recipe-Application-React-Native/assets/144849057/92e4d69e-8882-483c-926b-6ac972e5f32a)
+![Recipe app Mockup](https://github.com/sharifaaldakheel/Recipe-Application-React-Native/assets/144849057/894fada6-db8f-4553-8af0-158d4fa977f7)
