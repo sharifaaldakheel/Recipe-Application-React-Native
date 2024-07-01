@@ -1,159 +1,114 @@
-import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity} from 'react-native';
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import * as Icons from "react-native-heroicons/solid";
-import { FavfoodItems } from './index.js';
-
+import { FIREBASE_AUTH, FIREBASE_DB } from '../FirebaseConfig';
+import { collection, getDocs } from 'firebase/firestore';
 
 export default function UserScreen() {
     const navigation = useNavigation();
-
+    const [favorites, setFavorites] = useState([]);
+  
+    useEffect(() => {
+        const getFavorites = async () => {
+          const userId = FIREBASE_AUTH.currentUser.uid;
+          const favoritesRef = collection(FIREBASE_DB, "users", userId, "favorites");
+          const snapshot = await getDocs(favoritesRef);
+          const recipes = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+          setFavorites(recipes);
+        };
+        getFavorites();
+      }, []);
+      
     return (
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.back} onPress={() => navigation.navigate('Home')}>
+          <Icons.ArrowLeftIcon style={styles.backIcon} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Your Favorites</Text>
         
-        <View style={styles.container}>
-
-         <TouchableOpacity style={styles.back}>
-            <Icons.ArrowLeftIcon  onPress={()=> navigation.navigate('Home')} style={styles.backIcon}/>
-         </TouchableOpacity>
-         
-         <View style={styles.avatarContainer}>
-            <Image source={require('./Avatar.png')} style={styles.avatar}/>
-            <Text style={styles.usertxt}>User Name</Text>
-         </View>
-
-         <View style={styles.info}>
-            <Text style={styles.infotxt}>Edit Pesonal Information</Text>
-            <Icons.ArrowRightIcon style={styles.arr}/>
-         </View>
-
-         <View>
-         <Text style={styles.favrec}>Favorite Recipes</Text>
-         </View>
-         <View>
-            <ScrollView>
-            <View style={styles.gridContainer} >
-                {
-                    FavfoodItems.map((item, index) => (
-                        <TouchableOpacity key={item.id} style={styles.itemContainer}
-                        onPress={()=>navigation.navigate(item.navigateTo)}>
-                            <Image source={item.image}  style={styles.image}/>
-                            <Text style={styles.title}>{item.name}</Text>
-                            <Text style={styles.time}>Preparation Time: {item.prep}</Text>
-                        </TouchableOpacity>
-                    ))
-                }
-            </View>
-        </ScrollView>
-        </View>
-
-        </View>
-
-    )
-}   
+        {favorites.length > 0 ? (
+          <ScrollView>
+            {favorites.filter((recipe) => recipe.recipeId).map((recipe) => (
+              <TouchableOpacity 
+              key={recipe.id} 
+              style={styles.favoriteItem} 
+          >
+              <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+              <Text style={styles.recipeTitle}>{recipe.title}</Text>
+              <Text style={styles.recipeTime}>{recipe.time}</Text>
+          </TouchableOpacity>
+          
+            ))}
+          </ScrollView>
+        ) : (
+          <Text style={styles.warning}>No favorites yet!</Text>
+        )}
+      </View>
+    );
+}
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#262626',
-      paddingTop: 60, 
-    },
-    back: {
-      backgroundColor:"#fff",
-      flexDirection: 'row',  
-      alignItems: 'flex-start',  
-      justifyContent: 'flex-start',
-      position: 'absolute',
-      top: 80,
-      left: 30,
-      height:40,
-      width:40,
-      justifyContent:"center",
-      alignItems:"center",
-      borderRadius:10,
-      shadowColor: '#000',
-  shadowOffset: {
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#262626',
+    paddingTop: 100,
+  },
+  back: {
+    backgroundColor: "#fff",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    position: 'absolute',
+    top: 60,
+    left: 30,
+    height: 40,
+    width: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
       width: 0,
       height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    zIndex: 100,
   },
-  shadowOpacity: 0.25,
-  shadowRadius: 3.84,
-  elevation: 5,
+  backIcon: {
+    color: "#ffc300",
+    height: 30,
+    width: 30,
   },
-
-  backIcon:{
-      color:"#ffc300",
-      height:30,
-      width:30,
+  title: {
+    color: "#fff",
+    fontSize: 24,
+    marginVertical: 20,
   },
-
-    avatarContainer: {
-      alignItems: 'center',
-      marginTop: '10%', // Use percentage for positioning
-    },
-    avatar: {
-      width: 150,
-      height: 150,
-      backgroundColor: '#fff',
-      borderRadius: 75,
-      borderColor: '#ffc300',
-      borderWidth: 2,
-    },
-    usertxt: {
-      fontSize: 28,
-      color: '#fff',
-      marginTop: 10,
-    },
-    info: {
-      backgroundColor: '#3f3f3f',
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 15,
-      marginTop:15,
-
-    },
-    infotxt: {
-      marginLeft: 15,
-      color: '#fff',
-      fontSize: 20,
-    },
-    arr: {
-      color: '#fff',
-      marginLeft: 18,
-    },
-    favrec: {
-      marginLeft: 15,
-      fontSize: 24,
-      color: '#ffc300',
-      marginTop: 20,
-      marginBottom:20,
-    },
-    gridContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      paddingHorizontal: 10,
-    },
-    itemContainer: {
-      width: '48%',
-      marginBottom: 10,
-    },
-    image: {
-      width: '100%',
-      height: 150,
-      marginBottom: 5,
-      borderRadius: 10,
-      borderColor: '#ffc300',
-      borderWidth: 1,
-    },
-    title:{
-        fontSize:18,
-        color:"#ffc300",
-    },
-    time:{
-        color:"#FFF",
-        paddingBottom:15,
-    },
-  });
-  
+  warning: {
+    color: "#fff",
+    marginTop: 20,
+  },
+  favoriteItem: {
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  recipeImage: {
+    width: 200,
+    height: 150,
+    borderRadius: 10,
+  },
+  recipeTitle: {
+    color: "#fff",
+    fontSize: 18,
+    marginTop: 10,
+  },
+  recipeTime: {
+    color: "#ffc300",
+    fontSize: 16,
+  },
+});
