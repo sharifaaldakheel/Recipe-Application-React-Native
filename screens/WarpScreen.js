@@ -17,8 +17,9 @@ export default function WarpScreen() {
           <Icons.StarIcon style={styles.favIcon}/>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.back}>
-          <Icons.ArrowLeftIcon  onPress={()=> navigation.navigate('Home')} style={styles.backIcon}/>
+        <TouchableOpacity style={styles.back}
+        onPress={()=> navigation.navigate('Home')}>
+          <Icons.ArrowLeftIcon style={styles.backIcon}/>
         </TouchableOpacity>
 
 
@@ -71,8 +72,8 @@ const styles = StyleSheet.create({
     fav: {
         zIndex:1,
         backgroundColor:"#fff",
-        flexDirection: 'row',  // Align items horizontally
-        alignItems: 'flex-start',  // Align items at the top
+        flexDirection: 'row',  
+        alignItems: 'flex-start',  
         justifyContent: 'flex-start',
         position: 'absolute',
         top: 80,
