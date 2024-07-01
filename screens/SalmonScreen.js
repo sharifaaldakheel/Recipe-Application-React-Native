@@ -1,7 +1,7 @@
 import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { addDoc, collection, doc, deleteDoc, getDocs, setDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, deleteDoc, getDocs, query, where } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../FirebaseConfig';
 import * as Icons from "react-native-heroicons/solid";
 
@@ -15,14 +15,14 @@ export default function SalmonScreen() {
     const checkFavoriteStatus = async () => {
       const userId = FIREBASE_AUTH.currentUser.uid;
       const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
-      const snapshot = await getDocs(recipeRef);
+      const q = query(recipeRef, where("recipeId", "==", 'Grilled Salmon'));
+      const snapshot = await getDocs(q);
       
-      snapshot.forEach((doc) => { /* documents retrieved from the Firestore  */
-        if (doc.data().recipeId === 'Grilled Salmon') {
-          setIsFavorite(true);
-          setRecipeId(doc.id);
-        }
-      });
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        setIsFavorite(true);
+        setRecipeId(doc.id);
+      }
     };
     checkFavoriteStatus();
   }, []);
@@ -107,6 +107,7 @@ export default function SalmonScreen() {
     </View>
   )
 }
+
 
 const styles = StyleSheet.create({
   container: {
