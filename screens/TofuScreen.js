@@ -1,11 +1,70 @@
-import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity} from 'react-native';
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { addDoc, collection, doc, deleteDoc, getDocs, setDoc } from 'firebase/firestore';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../FirebaseConfig';
 import * as Icons from "react-native-heroicons/solid";
 
+
 export default function TofuScreen() {
+
     const navigation = useNavigation();
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [recipeId, setRecipeId] = useState(null);    
+
+    useEffect(() => {
+        const checkFavoriteStatus = async () => {
+          const userId = FIREBASE_AUTH.currentUser.uid;
+          const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
+          const snapshot = await getDocs(recipeRef);
+          
+          snapshot.forEach((doc) => { /* documents retrieved from the Firestore  */
+            if (doc.data().recipeId === 'Stir-Fried Tofu') {
+              setIsFavorite(true);
+              setRecipeId(doc.id);
+            }
+          });
+        };
+        checkFavoriteStatus();
+      }, []);
+    
+      const toggleFavorite = async () => {
+        if (isFavorite) {
+          await removeFromFavorites();
+        } else {
+          await addToFavorites();
+        }
+        setIsFavorite(!isFavorite);
+      };
+    
+      const userId = FIREBASE_AUTH.currentUser.uid;
+    
+      const addToFavorites = async () => {
+        try {
+          const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
+          const recipeData = {
+            recipeId: 'Stir-Fried Tofu',
+            image: './tofu.jpg', 
+            title: 'Stir-Fried Tofu',
+            time: '30 Minutes',
+          };
+          const docRef = await addDoc(recipeRef, recipeData);
+          setRecipeId(docRef.id);
+          console.log("Added to favorites:", recipeData); 
+        } catch (error) {
+          console.error("Error adding favorite:", error);
+        }
+      };
+    
+      const removeFromFavorites = async () => {
+        try {
+          const recipeRef = doc(FIREBASE_DB, "users", userId, "favorites", recipeId);
+          await deleteDoc(recipeRef);
+          console.log("Removed from favorites:", recipeId); 
+        } catch (error) {
+          console.error("Error removing favorite:", error);
+        }
+      };
 
     return (
        <View className="container" style={styles.container}>
@@ -13,12 +72,13 @@ export default function TofuScreen() {
         <Image source={require('./tofu.jpg')} style={styles.bg}/>
         </View>
 
-        <TouchableOpacity style={styles.fav}>
-          <Icons.StarIcon style={styles.favIcon}/>
+        <TouchableOpacity style={styles.fav} onPress={toggleFavorite}>
+          <Icons.StarIcon style={[styles.favIcon, isFavorite && styles.favIconActive]} />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.back}>
-          <Icons.ArrowLeftIcon  onPress={()=> navigation.navigate('Home')} style={styles.backIcon}/>
+        <TouchableOpacity style={styles.back}
+        onPress={()=> navigation.navigate('Home')}>
+          <Icons.ArrowLeftIcon style={styles.backIcon}/>
         </TouchableOpacity>
 
         <View style={styles.details}>
@@ -65,8 +125,8 @@ const styles = StyleSheet.create({
     fav: {
         zIndex:1,
         backgroundColor:"#fff",
-        flexDirection: 'row',  // Align items horizontally
-        alignItems: 'flex-start',  // Align items at the top
+        flexDirection: 'row', 
+        alignItems: 'flex-start',  
         justifyContent: 'flex-start',
         position: 'absolute',
         top: 80,
