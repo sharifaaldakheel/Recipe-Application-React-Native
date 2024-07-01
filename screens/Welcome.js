@@ -3,6 +3,9 @@ import  React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
+import { FIREBASE_AUTH } from '../FirebaseConfig';
+
+
 
 
 export default function WelcomeScreen() {
@@ -36,8 +39,9 @@ const styles = StyleSheet.create({
         backgroundColor:'#262626',
     },
     Image:{
+        paddingTop:"30%",
         height: "75%",
-        aspectRatio: 1, // Adjust the width as needed
+        aspectRatio: 1, 
     },
     title: {
         color: "#fff",
