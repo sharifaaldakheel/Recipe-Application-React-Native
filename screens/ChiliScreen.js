@@ -17,8 +17,9 @@ export default function ChiliScreen() {
           <Icons.StarIcon style={styles.favIcon}/>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.back}>
-          <Icons.ArrowLeftIcon  onPress={()=> navigation.navigate('Home')} style={styles.backIcon}/>
+        <TouchableOpacity style={styles.back}
+        onPress={()=> navigation.navigate('Home')}>
+          <Icons.ArrowLeftIcon style={styles.backIcon}/>
         </TouchableOpacity>
 
 
