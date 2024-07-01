@@ -33,6 +33,7 @@ export default function UserScreen() {
               <TouchableOpacity 
               key={recipe.id} 
               style={styles.favoriteItem} 
+              onPress={() => navigation.navigate(recipe.recipeId)}
           >
               <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
               <Text style={styles.recipeTitle}>{recipe.title}</Text>
@@ -47,6 +48,8 @@ export default function UserScreen() {
       </View>
     );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {
