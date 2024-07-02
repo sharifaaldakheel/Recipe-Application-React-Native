@@ -1,4 +1,4 @@
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Image, Text, View, TouchableOpacity, ActivityIndicator, SafeAreaView } from 'react-native';
 import TextInput from 'react-native-text-input-interactive';
 import { Formik } from 'formik';
@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import * as Icons from "react-native-heroicons/solid";
 import { useNavigation } from '@react-navigation/native'; 
 import { FIREBASE_AUTH } from '../FirebaseConfig';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SigninScreen() {
@@ -14,93 +14,112 @@ export default function SigninScreen() {
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
 
+    useEffect(() => {
+        const checkUser = async () => {
+            const storedUser = await AsyncStorage.getItem('user');
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+                navigation.navigate('Home');
+            }
+        };
+
+        checkUser();
+
+        const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
+                AsyncStorage.setItem('user', JSON.stringify(currentUser));
+                navigation.navigate('Home');
+            } else {
+                setUser(null);
+                AsyncStorage.removeItem('user');
+            }
+        });
+
+        return () => unsubscribe();
+    }, [navigation]);
 
     const validationSchema = yup.object().shape({
         email: yup.string().email('Invalid email').required('Email is required'),
         password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required')
     });
 
-    const auth = FIREBASE_AUTH;
-
     const SignIn = async (email, password) => {
         setLoading(true);
         try {
-            const response = await signInWithEmailAndPassword (auth, email, password);
+            const response = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
             console.log(response);
             alert('Welcome!');
             navigation.navigate('Home');
         } catch (error) {
             console.log(error);
-            alert('SignUp Failed!' + error.message);
+            alert('SignIn Failed!' + error.message);
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
         <SafeAreaView style={styles.container}>
-            
             <TouchableOpacity style={styles.back} onPress={() => navigation.navigate('SignUp')}>
-             <Icons.ArrowLeftIcon style={styles.backIcon}/>
+                <Icons.ArrowLeftIcon style={styles.backIcon} />
             </TouchableOpacity>
 
-           <Image source={require('./003.png')} style={styles.image} />
-           <Text style={styles.welcoming}>Happy to see you again!</Text>
+            <Image source={require('./003.png')} style={styles.image} />
+            <Text style={styles.welcoming}>Happy to see you again!</Text>
 
-           <Formik
-               initialValues={{ email: '', password: '' }}
-               validationSchema={validationSchema}
-               onSubmit={(values) => { 
-                SignIn(values.email, values.password);
-               }}>
+            <Formik
+                initialValues={{ email: '', password: '' }}
+                validationSchema={validationSchema}
+                onSubmit={(values) => { 
+                    SignIn(values.email, values.password);
+                }}>
+                {formikProps => (
+                    <React.Fragment>
+                        <View style={styles.form}>
+                            <View style={styles.regForm}>
+                                <Text style={styles.info}>Email Address:</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Example@email.com'
+                                    onChangeText={formikProps.handleChange('email')}
+                                    value={formikProps.values.email}
+                                />
+                                {formikProps.touched.email && formikProps.errors.email ? (
+                                    <Text style={styles.error}>{formikProps.errors.email}</Text>
+                                ) : null}
 
-               {formikProps => (
-                   <React.Fragment>
-                       <View style={styles.form}>
-                           <View style={styles.regForm}>
-                               <Text style={styles.info}>Email Address:</Text>
-                               <TextInput
-                                   style={styles.input}
-                                   placeholder='Example@email.com'
-                                   onChangeText={formikProps.handleChange('email')}
-                                   value={formikProps.values.email}
-                               />
-                               {formikProps.touched.email && formikProps.errors.email ? (
-                                   <Text style={styles.error}>{formikProps.errors.email}</Text>
-                               ) : null}
+                                <Text style={styles.info}>Password:</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder='Enter a strong password'
+                                    secureTextEntry={true}
+                                    onChangeText={formikProps.handleChange('password')}
+                                    value={formikProps.values.password}
+                                />
+                                {formikProps.touched.password && formikProps.errors.password ? (
+                                    <Text style={styles.error}>{formikProps.errors.password}</Text>
+                                ) : null}
 
-                               <Text style={styles.info}>Password:</Text>
-                               <TextInput
-                                   style={styles.input}
-                                   placeholder='Enter a strong password'
-                                   secureTextEntry={true}
-                                   onChangeText={formikProps.handleChange('password')}
-                                   value={formikProps.values.password}
-                               />
-                               {formikProps.touched.password && formikProps.errors.password ? (
-                                   <Text style={styles.error}>{formikProps.errors.password}</Text>
-                               ) : null}
+                                <TouchableOpacity>
+                                    <Text style={styles.pass}>Forget Password?</Text>
+                                </TouchableOpacity>
 
-                               <TouchableOpacity>
-                                   <Text style={styles.pass}>Forget Password?</Text>
-                               </TouchableOpacity>
-
-                               {loading ? (
-                                <ActivityIndicator />
-                                 ) : (
+                                {loading ? (
+                                    <ActivityIndicator />
+                                ) : (
                                     <TouchableOpacity
-                                      style={styles.btn}
-                                      onPress={formikProps.handleSubmit}
-                                      disabled={loading}>
-                                      <Text style={styles.btntxt}>Sign in</Text>
+                                        style={styles.btn}
+                                        onPress={formikProps.handleSubmit}
+                                        disabled={loading}>
+                                        <Text style={styles.btntxt}>Sign in</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
-                       </View>
-                   </React.Fragment>
-                    )}
-           </Formik>
+                        </View>
+                    </React.Fragment>
+                )}
+            </Formik>
         </SafeAreaView>
     );
 }
@@ -128,20 +147,19 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         shadowColor: '#000',
         shadowOffset: {
-          width: 0,
-          height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
-        zIndex:100,
-      },
-      backIcon: {
+        zIndex: 100,
+    },
+    backIcon: {
         color: "#ffc300",
         height: 30,
         width: 30,
-        
-      },
+    },
     image: {
         resizeMode: "contain",
         marginTop: "70%",
