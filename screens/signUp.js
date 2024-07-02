@@ -129,8 +129,9 @@ const styles = StyleSheet.create({
         width: "100%",
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
-        paddingLeft: 10,
-        paddingRight: 10,
+        paddingLeft: 15,
+        paddingRight: 15,
+        zIndex:100,
     },
     regForm: {
         marginTop: 30,
