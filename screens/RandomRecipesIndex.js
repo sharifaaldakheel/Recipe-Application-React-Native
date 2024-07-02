@@ -62,22 +62,6 @@ const recipes = [
   navigateTo: "Grilled Salmon",
 },
 {
-  id: 9,
-  name: "Acai Bowl",
-  prep: "15 Mins",
-  image: require ("./acai.jpg"),
-  navigateTo: "Acai Bowl",
-
-},
-{
-  id: 10,
-  name: "Avocado Toast",
-  prep: "8 Mins",
-  desc: "Sliced ripe avocado on whole-grain toast, topped with cherry tomatoes, feta cheese, and a sprinkle of herbs",
-  image: require ("./toast.jpg"),
-  navigateTo: "Avocado Toast",
-},
-{
   id: 11,
   name: "Greek Salad",
   prep: "15 Mins",
