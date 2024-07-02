@@ -1,11 +1,72 @@
-import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity} from 'react-native';
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { addDoc, collection, doc, deleteDoc, getDocs, query, where } from 'firebase/firestore';
+import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '../FirebaseConfig';
 import * as Icons from "react-native-heroicons/solid";
 
 export default function ButterShrimpScreen() {
     const navigation = useNavigation();
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [recipeId, setRecipeId] = useState(null);
+
+    useEffect(() => {
+        const checkFavoriteStatus = async () => {
+          const userId = FIREBASE_AUTH.currentUser.uid;
+          const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
+          const q = query(recipeRef, where("recipeId", "==", 'Butter Shrimp'));
+          const snapshot = await getDocs(q);
+          
+          if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            setIsFavorite(true);
+            setRecipeId(doc.id);
+          }
+        };
+        checkFavoriteStatus();
+      }, []);
+    
+      const toggleFavorite = async () => {
+        if (isFavorite) {
+          await removeFromFavorites();
+        } else {
+          await addToFavorites();
+        }
+        setIsFavorite(!isFavorite);
+      };
+    
+      const userId = FIREBASE_AUTH.currentUser.uid;
+    
+      const addToFavorites = async () => {
+        try {
+          const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
+          const recipeData = {
+            recipeId: 'Butter Shrimp',
+            image: 'https://firebasestorage.googleapis.com/v0/b/recipeapp-45241.appspot.com/o/ButterShrimp.jpg?alt=media&token=483be9d5-e7d7-404b-ad9c-bccbdad5abdc', 
+            title: 'Butter Shrimp',
+            time: '10 Minutes',
+          };
+      
+          const docRef = await addDoc(recipeRef, recipeData);
+          setRecipeId(docRef.id);
+          alert('Recipe has been added to your favorites!');
+          console.log("Added to favorites:", recipeData);
+        } catch (error) {
+          console.error("Error adding favorite:", error);
+        }
+      };
+    
+    
+    
+      const removeFromFavorites = async () => {
+        try {
+          const recipeRef = doc(FIREBASE_DB, "users", userId, "favorites", recipeId);
+          await deleteDoc(recipeRef);
+          console.log("Removed from favorites:", recipeId); 
+        } catch (error) {
+          console.error("Error removing favorite:", error);
+        }
+      };
 
     return (
        <View className="container" style={styles.container}>
@@ -13,8 +74,9 @@ export default function ButterShrimpScreen() {
         <Image source={require('./ButterShrimp.jpg')} style={styles.bg}/>
         </View>
 
-        <TouchableOpacity style={styles.fav}>
-          <Icons.StarIcon style={styles.favIcon}/>
+        <TouchableOpacity style={styles.fav}
+        onPress={toggleFavorite}>
+          <Icons.StarIcon style={[styles.favIcon, isFavorite && styles.favIconActive]}/>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.back}
