@@ -2,7 +2,7 @@ import { StyleSheet, Image, Text, View, ScrollView, TouchableOpacity } from 'rea
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { addDoc, collection, doc, deleteDoc, getDocs, query, where } from 'firebase/firestore';
-import { FIREBASE_AUTH, FIREBASE_DB } from '../FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '../FirebaseConfig';
 import * as Icons from "react-native-heroicons/solid";
 
 export default function SalmonScreen() {
@@ -43,17 +43,21 @@ export default function SalmonScreen() {
       const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
       const recipeData = {
         recipeId: 'Grilled Salmon',
-        image: './salmon.jpg', 
+        image: 'https://firebasestorage.googleapis.com/v0/b/recipeapp-45241.appspot.com/o/salmon.jpg?alt=media&token=724aa202-d241-4c45-b682-676b470b595a', 
         title: 'Grilled Salmon',
         time: '50 Minutes',
       };
+  
       const docRef = await addDoc(recipeRef, recipeData);
       setRecipeId(docRef.id);
-      console.log("Added to favorites:", recipeData); 
+      alert('Recipe has been added to your favorites !');
+      console.log("Added to favorites:", recipeData);
     } catch (error) {
       console.error("Error adding favorite:", error);
     }
   };
+
+
 
   const removeFromFavorites = async () => {
     try {
