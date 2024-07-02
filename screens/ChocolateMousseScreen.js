@@ -5,7 +5,8 @@ import { addDoc, collection, doc, deleteDoc, getDocs, query, where } from 'fireb
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '../FirebaseConfig';
 import * as Icons from "react-native-heroicons/solid";
 
-export default function ChocolateMousseScreen() {
+
+export default function CookiesScreen() {
     const navigation = useNavigation();
     const [isFavorite, setIsFavorite] = useState(false);
     const [recipeId, setRecipeId] = useState(null);
@@ -14,7 +15,7 @@ export default function ChocolateMousseScreen() {
         const checkFavoriteStatus = async () => {
           const userId = FIREBASE_AUTH.currentUser.uid;
           const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
-          const q = query(recipeRef, where("recipeId", "==", 'Chocolate Mousse'));
+          const q = query(recipeRef, where("recipeId", "==", 'Cookies'));
           const snapshot = await getDocs(q);
           
           if (!snapshot.empty) {
@@ -41,10 +42,10 @@ export default function ChocolateMousseScreen() {
         try {
           const recipeRef = collection(FIREBASE_DB, "users", userId, "favorites");
           const recipeData = {
-            recipeId: 'Chocolate Mousse',
-            image: 'https://firebasestorage.googleapis.com/v0/b/recipeapp-45241.appspot.com/o/ChocolateMousse.jpg?alt=media&token=62a75547-7aeb-4410-a98a-1f1ae3fde23b', 
-            title: 'Chocolate Mousse',
-            time: '1 H + 10 Mins',
+            recipeId: 'Cookies',
+            image: 'https://firebasestorage.googleapis.com/v0/b/recipeapp-45241.appspot.com/o/Cookies.jpg?alt=media&token=aae95a96-2d16-4ddd-99d9-8237b820d95f', 
+            title: 'Cookies',
+            time: '1 H + 20 Mins',
           };
       
           const docRef = await addDoc(recipeRef, recipeData);
@@ -71,46 +72,48 @@ export default function ChocolateMousseScreen() {
     return (
        <View className="container" style={styles.container}>
         <View >
-        <Image source={require('./ChocolateMousse.jpg')} style={styles.bg}/>
+        <Image source={require('./Cookies.jpg')} style={styles.bg}/>
         </View>
 
         <TouchableOpacity style={styles.fav}
         onPress={toggleFavorite}>
-          <Icons.StarIcon style={styles.favIcon}/>
+          <Icons.StarIcon style={[styles.favIcon, isFavorite && styles.favIconActive]}/>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.back}
         onPress={()=> navigation.navigate('Home')}>
-          <Icons.ArrowLeftIcon style={[styles.favIcon, isFavorite && styles.favIconActive]}/>
+          <Icons.ArrowLeftIcon style={styles.backIcon}/>
         </TouchableOpacity>
 
 
         <View style={styles.details}>
-            <Text style={styles.title}>Chocolate Mousse</Text>
+            <Text style={styles.title}>Chocolate Chip Cookies</Text>
 
             <View style={styles.row}>
             <Image source={require('./fire.png')} style={styles.icons}/>
-            <Text style={styles.info}>300  CAL</Text>
+            <Text style={styles.info}>150 CAL</Text>
             <Image source={require('./clock.png')} style={styles.icons}/>
-            <Text style={styles.info}>10 Minutes{'\n'}+1 hour chilling</Text>
+            <Text style={styles.info}>20 Minutes{'\n'}+1 hour chilling</Text>
             </View>
 
             <ScrollView style={{flex: 1}}>
               <View>
               <Text style={styles.subtitle}>Ingredients:</Text>
-              <Text style={styles.ing}>1 cup heavy cream
-              {'\n'}4 oz dark chocolate, chopped
-              {'\n'}2 tbsp sugar
-              {'\n'}1 tsp vanilla extract</Text>
+              <Text style={styles.ing}>1 cup butter, softened
+              {'\n'}1 cup sugar + brown sugar 
+              {'\n'}2 eggs
+              {'\n'}1 tsp vanilla extract
+              {'\n'}3 cups flour
+              {'\n'}1 tsp baking soda
+              {'\n'}2 cups chocolate chips</Text>
               </View>
 
               <View>
               <Text style={styles.subtitle}>Instructions:</Text>
-              <Text style={styles.ing}>Melt chocolate in a microwave or double boiler.
-              {'\n'}Serve on tortillas Melt chocolate in a microwave or double boiler.
-              {'\n'}Whip the cream with sugar and vanilla until soft peaks form.
-              {'\n'}Fold in the melted chocolate until well combined.
-              {'\n'}Chill for at least 1 hour before serving.</Text>
+              <Text style={styles.ing}>Preheat oven to 350°F (175°C).
+              {'\n'}Cream butter and sugars, add eggs and vanilla, mix well.
+              {'\n'}Mix in flour and baking soda, then fold in chocolate chips.
+              {'\n'}Drop spoonfuls onto a baking sheet and bake for 10-12 minutes.</Text>
               </View>
               </ScrollView>
 
@@ -132,7 +135,7 @@ const styles = StyleSheet.create({
     fav: {
         zIndex:1,
         backgroundColor:"#fff",
-        flexDirection: 'row', 
+        flexDirection: 'row',  
         alignItems: 'flex-start',  
         justifyContent: 'flex-start',
         position: 'absolute',
